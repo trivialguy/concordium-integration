@@ -105,16 +105,25 @@ export function ContractInvoker({ rpc, network, connection, connectedAccount, co
     const schemaRpcResult = useContractSchemaRpc(rpc, contract);
     const [schemaTypeInput, setSchemaTypeInput] = useState(DEFAULT_SCHEMA_TYPE);
 
-    const [contractParams, setContractParams] = useState<Array<ContractParamEntry>>([]);
+    const [contractParams, setContractParams] = useState('');
     const [contractAmountInput, setContractAmountInput] = useState('');
     const onSchemaChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setSchemaInput(e.target.value), []);
+    const onParamChange = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => setContractParams(e.target.value),
+        []
+    );
     const onAmountChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => setContractAmountInput(e.target.value),
         []
     );
 
-    const contractParamsResult = useMemo(
-        () => ok(contractParams),
+    const contractParamsResult = useMemo(() => {
+            try {
+                return ok(Number(contractParams));
+            } catch (e) {
+                return err('Param must be a number');
+            }
+        },
         [contractParams]
     );
     const schemaResult = useMemo(() => {
@@ -267,10 +276,11 @@ export function ContractInvoker({ rpc, network, connection, connectedAccount, co
                         Parameters:
                     </Form.Label>
                     <Col sm={10}>
-                        <ContractParamInputs
-                            contract={contract}
-                            contractParams={contractParams}
-                            setContractParams={setContractParams}
+                        <Form.Control
+                            // contract={contract}
+                            value={contractParams}
+                            onChange={onParamChange}
+                            isInvalid={contractParamsResult.isErr()}
                         />
                         <div className="mt-2">As JSON:</div>
                         {contractParamsResult.match(
@@ -340,78 +350,78 @@ export function ContractInvoker({ rpc, network, connection, connectedAccount, co
     );
 }
 
-interface ContractParamInputsProps {
-    contract: Info;
-    contractParams: Array<ContractParamEntry>;
-    setContractParams: Dispatch<Array<ContractParamEntry>>;
-}
+// interface ContractParamInputsProps {
+//     contract: Info;
+//     contractParams: ContractParamEntry;
+//     setContractParams: Dispatch<ContractParamEntry>;
+// }
 
-function ContractParamInputs({ contractParams, setContractParams }: ContractParamInputsProps) {
-    const addContractParam = useCallback(() => {
-        setContractParams([...contractParams, 0]);
-    }, [contractParams, setContractParams]);
-    return (
-        <>
-            {contractParams.map((p, i) => (
-                <Row key={i}>
-                    <ContractParamInput
-                        key={i}
-                        index={i}
-                        contractParams={contractParams}
-                        setContractParams={setContractParams}
-                    />
-                </Row>
-            ))}
-            <Button onClick={addContractParam}>+</Button>
-        </>
-    );
-}
+// function ContractParamInputs({ contractParams, setContractParams }: ContractParamInputsProps) {
+//     const addContractParam = useCallback(() => {
+//         setContractParams(0);
+//     }, [contractParams, setContractParams]);
+//     return (
+//         <>
+//             {contractParams.map((p, i) => (
+//                 <Row key={i}>
+//                     <ContractParamInput
+//                         key={i}
+//                         index={i}
+//                         contractParams={contractParams}
+//                         setContractParams={setContractParams}
+//                     />
+//                 </Row>
+//             ))}
+//             <Button onClick={addContractParam}>+</Button>
+//         </>
+//     );
+// }
 
-interface ContractParamInputProps {
-    index: number;
-    contractParams: Array<ContractParamEntry>;
-    setContractParams: Dispatch<Array<ContractParamEntry>>;
-}
+// interface ContractParamInputProps {
+//     index: number;
+//     contractParams: ContractParamEntry;
+//     setContractParams: Dispatch<ContractParamEntry>;
+// }
 
-function parseCustom (v: any) {
-    if ( v === undefined || isNaN(v) ) {
-        return 0;
-    }
+// function parseCustom (v: any) {
+//     if ( v === undefined || isNaN(v) ) {
+//         return 0;
+//     }
 
-    return parseInt(v);
-}
+//     return parseInt(v);
+// }
 
-function ContractParamInput({ index, contractParams, setContractParams }: ContractParamInputProps) {
+// function ContractParamInput({contractParams, setContractParams }: ContractParamInputProps) {
     
-    const setParamValue = useCallback(
-        (e: ChangeEvent<HTMLInputElement>) => {
-            // const newValue: number = parseParamValue(+e.target.value);
-            setContractParams(contractParams.map((value, i) => i === index ? parseCustom(e.target.value) : value));
+//     const setParamValue = useCallback(
+//         (e: ChangeEvent<HTMLInputElement>) => {
+//             // const newValue: number = parseParamValue(+e.target.value);
+//             setContractParams(contractParams.map((value, i) => i === index ? parseCustom(e.target.value) : value));
 
-        },
-        [index,contractParams, setContractParams]
-    );
-    const remove = useCallback(() => {
-        setContractParams(contractParams.filter((_, i) => i !== index));
-    }, [index, contractParams, setContractParams]);
-    return (
-        <>
-            <Col sm={7}>
-                <Form.Group as={Row}>
-                    <Form.Label>
-                        Value
-                        <Form.Control value={contractParams[index]} onChange={setParamValue} />
-                    </Form.Label>
-                </Form.Group>
-            </Col>
-            <Col sm={1}>
-                <Button variant="danger" onClick={remove}>
-                    x
-                </Button>
-            </Col>
-        </>
-    );
-}
+//         },
+//         [index,contractParams, setContractParams]
+//     );
+//     const remove = useCallback(() => {
+//         setContractParams(contractParams.filter((_, i) => i !== index));
+//     }, [index, contractParams, setContractParams]);
+//     return (
+//         <>
+//             <Col sm={7}>
+//                 <Form.Group as={Row}>
+//                     <Form.Label>
+//                         Value
+//                         <Form.Control value={contractParams} onChange={setParamValue} />
+//                     </Form.Label>
+//                 </Form.Group>
+//             </Col>
+//             <Col sm={1}>
+//                 <Button variant="danger" onClick={remove}>
+//                     x
+//                 </Button>
+//             </Col>
+//         </>
+//     );
+// }
 
 interface ContractMethodSelectorProps {
     contract: Info;
