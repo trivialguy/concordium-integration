@@ -14,7 +14,7 @@ export default function Root() {
     const [network, setNetwork] = useState(TESTNET);
     return (
         <Container>
-            <h1>Sample dApp</h1>
+            <h1>Ahan Liquid Staking 2.0 Testnet</h1>
             <NetworkSelector selected={network} options={[TESTNET, MAINNET]} select={setNetwork} />
             <WithWalletConnector network={network}>{(props) => <Main {...props} />}</WithWalletConnector>
         </Container>
